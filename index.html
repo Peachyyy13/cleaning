@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ระบบหลังบ้าน – จัดการการจองบริการ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#f3f1ec;--card:#fff;--ink:#1d2b2e;--mute:#6a7679;--line:#e3dfd6;--acc:#0f766e;--accink:#fff;--soft:#e6f2f0;
+color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111819;--card:#1a2325;--ink:#e6eeee;--mute:#92a1a4;--line:#2a3639;--acc:#2dd4bf;--accink:#062c28;--soft:#17302f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111819;--card:#1a2325;--ink:#e6eeee;--mute:#92a1a4;--line:#2a3639;--acc:#2dd4bf;--accink:#062c28;--soft:#17302f;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Noto Sans Thai",system-ui,sans-serif;display:flex;min-height:100vh}
+aside{width:220px;flex:none;background:var(--card);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:4px}
+.brand{font-weight:700;font-size:17px;padding:0 8px 14px;display:flex;gap:8px;align-items:center}
+.brand span{background:var(--acc);color:var(--accink);border-radius:10px;width:32px;height:32px;display:grid;place-items:center}
+nav{display:flex;flex-direction:column;gap:2px}
+nav button{all:unset;cursor:pointer;padding:9px 12px;border-radius:10px;color:var(--mute);font-weight:500;display:flex;gap:10px;align-items:center}
+nav button:hover{background:var(--soft)}
+nav button.on{background:var(--soft);color:var(--acc);font-weight:700}
+.reset{margin-top:auto;font-size:12px;color:var(--mute);background:none;border:0;cursor:pointer;text-align:left;padding:8px 12px;font-family:inherit}
+main{flex:1;min-width:0;padding:28px clamp(16px,3vw,36px)}
+h1{margin:0 0 4px;font-size:24px}
+.sub{color:var(--mute);margin:0 0 22px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.stat small{color:var(--mute)}
+.stat b{display:block;font-size:26px;margin-top:2px;color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.bar h1{margin:0;flex:1 1 auto}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 11px;width:100%}
+.bar input{width:210px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--acc);outline-offset:-1px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:9px 16px;cursor:pointer;background:var(--acc);color:var(--accink)}
+.btn.ghost{background:var(--soft);color:var(--acc)}
+.btn.del{background:#dc2626;color:#fff}
+.wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;white-space:nowrap}
+th{font-size:12px;letter-spacing:.03em;color:var(--mute);text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);font-weight:500}
+td{padding:12px 16px;border-bottom:1px solid var(--line)}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--soft)}
+tr:last-child td{border-bottom:0}
+.empty{padding:36px;text-align:center;color:var(--mute)}
+.b{--c:#6b7280;display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent)}
+.ok{--c:#16a34a}.warn{--c:#d97706}.bad{--c:#dc2626}.info{--c:#2563eb}
+dialog{border:1px solid var(--line);border-radius:18px;background:var(--card);color:var(--ink);padding:0;width:min(560px,94vw);max-height:90vh}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog form{padding:22px;display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+dialog h2{grid-column:1/-1;margin:0 0 4px;font-size:19px}
+label{font-size:12px;color:var(--mute);display:block;margin-bottom:3px}
+.full{grid-column:1/-1}
+.acts{grid-column:1/-1;display:flex;gap:8px;margin-top:6px}
+.acts .sp{flex:1}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
+#toast.show{opacity:1}
+@media(max-width:780px){
+body{flex-direction:column}
+aside{width:100%;flex-direction:row;align-items:center;overflow-x:auto;padding:10px;border-right:0;border-bottom:1px solid var(--line)}
+.brand{padding:0 8px 0 0}.brand b{display:none}
+nav{flex-direction:row}nav button{white-space:nowrap}
+.reset{display:none}
+dialog form{grid-template-columns:1fr}
+.bar input{width:100%}
+}
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand"><span>🛎️</span><b>ระบบจัดการการจอง</b></div>
+  <nav id="nav"></nav>
+  <button class="reset" id="reset">รีเซ็ตเป็นข้อมูลตัวอย่าง</button>
+</aside>
+<main id="main"></main>
+<dialog id="dlg"></dialog>
+<div id="toast"></div>
+<script>
+const T={
+bookings:{t:'การจอง',i:'📅',k:'BOOK_ID',p:'',l:r=>'#'+r.BOOK_ID+' · '+lbl('customers',r.CUS_CODE),
+ c:['BOOK_ID','CUS_CODE','SERVICE_ID','BOOK_DATE','BOOK_TIME','BOOK_STATUS','TOTAL_PRICE'],
+ f:['BOOK_ID:k','CUS_CODE:r:customers','SERVICE_ID:r:services','BOOK_DATE:d','BOOK_TIME:h','BOOK_ADDRESS:t','BOOK_STATUS:s:Pending|Confirmed|Done|Cancelled','TOTAL_PRICE:n','REMARKS:m']},
+customers:{t:'ลูกค้า',i:'👤',k:'CUS_CODE',p:'C',l:r=>r.CUS_FNAME+' '+r.CUS_LNAME,
+ c:['CUS_CODE','CUS_FNAME','CUS_LNAME','CUS_PHONE','CUS_CITY','CUS_TYPE','CUS_REGISTER_DATE'],
+ f:['CUS_CODE:k','CUS_FNAME:t','CUS_LNAME:t','CUS_PHONE:p','CUS_EMAIL:e','CUS_ADDRESS:t','CUS_CITY:t','CUS_POSTCODE:t','CUS_TYPE:s:Regular|VIP|Corporate','CUS_REGISTER_DATE:d']},
+workers:{t:'พนักงาน',i:'🧰',k:'WRK_CODE',p:'W',l:r=>r.WRK_FNAME+' '+r.WRK_LNAME,
+ c:['WRK_CODE','WRK_FNAME','WRK_LNAME','WRK_PHONE','WRK_SKILL','WRK_STATUS'],
+ f:['WRK_CODE:k','WRK_FNAME:t','WRK_LNAME:t','WRK_PHONE:p','WRK_EMAIL:e','WRK_ADDRESS:t','WRK_CITY:t','WRK_SKILL:t','WRK_STATUS:s:Active|Inactive','WRK_JOIN_DATE:d']},
+services:{t:'บริการ',i:'✨',k:'SER_CODE',p:'S',l:r=>r.SER_NAME,
+ c:['SER_CODE','SER_NAME','SER_CATEGORY','SER_PRICE','SER_DURATION','SER_STATUS'],
+ f:['SER_CODE:k','SER_NAME:t','SER_DESC:m','SER_PRICE:n','SER_DURATION:n','SER_CATEGORY:t','SER_STATUS:s:Active|Inactive']},
+payments:{t:'การชำระเงิน',i:'💳',k:'PAY_ID',p:'',l:r=>'PAY-'+r.PAY_ID,
+ c:['PAY_ID','BOOK_ID','PAY_METHOD','PAY_AMOUNT','PAY_DATE','PAY_STATUS','TRANSACTION_REF'],
+ f:['PAY_ID:k','BOOK_ID:r:bookings','PAY_METHOD:s:PromptPay|Credit Card|Cash|Transfer','PAY_AMOUNT:n','PAY_DATE:d','PAY_STATUS:s:Unpaid|Paid|Refunded','TRANSACTION_REF:t','NOTE:m']},
+assignments:{t:'มอบหมายงาน',i:'🔗',k:'BW_ID',p:'',l:r=>'BW-'+r.BW_ID,
+ c:['BW_ID','BOOK_ID','WRK_CODE','ASSIGN_DATE','STATUS','NOTE'],
+ f:['BW_ID:k','BOOK_ID:r:bookings','WRK_CODE:r:workers','ASSIGN_DATE:d','STATUS:s:Assigned|Accepted|Completed|Declined','NOTE:m']}
+};
+for(const t of Object.values(T))t.F=t.f.map(s=>{const[n,ty,o]=s.split(':');return{n,ty,o}});
+const seed=()=>({
+customers:[{CUS_CODE:'C001',CUS_FNAME:'สมชาย',CUS_LNAME:'ใจดี',CUS_PHONE:'081-234-5678',CUS_EMAIL:'somchai@example.com',CUS_CITY:'กรุงเทพฯ',CUS_POSTCODE:'10110',CUS_TYPE:'VIP',CUS_REGISTER_DATE:'2026-01-12'},
+ {CUS_CODE:'C002',CUS_FNAME:'มาลี',CUS_LNAME:'สุขสันต์',CUS_PHONE:'089-111-2233',CUS_CITY:'นนทบุรี',CUS_POSTCODE:'11000',CUS_TYPE:'Regular',CUS_REGISTER_DATE:'2026-03-05'},
+ {CUS_CODE:'C003',CUS_FNAME:'ธนากร',CUS_LNAME:'วงศ์ไทย',CUS_PHONE:'086-777-4545',CUS_CITY:'กรุงเทพฯ',CUS_POSTCODE:'10260',CUS_TYPE:'Corporate',CUS_REGISTER_DATE:'2026-05-20'}],
+workers:[{WRK_CODE:'W001',WRK_FNAME:'อรทัย',WRK_LNAME:'แสงทอง',WRK_PHONE:'082-555-0101',WRK_SKILL:'ทำความสะอาด',WRK_STATUS:'Active',WRK_JOIN_DATE:'2025-08-01'},
+ {WRK_CODE:'W002',WRK_FNAME:'ประเสริฐ',WRK_LNAME:'มั่นคง',WRK_PHONE:'083-555-0202',WRK_SKILL:'ล้างแอร์ ซ่อมบำรุง',WRK_STATUS:'Active',WRK_JOIN_DATE:'2025-10-15'},
+ {WRK_CODE:'W003',WRK_FNAME:'นภา',WRK_LNAME:'ศรีสุข',WRK_PHONE:'084-555-0303',WRK_SKILL:'ซักรีด ทำความสะอาด',WRK_STATUS:'Active',WRK_JOIN_DATE:'2026-02-10'}],
+services:[{SER_CODE:'S001',SER_NAME:'ทำความสะอาดบ้าน',SER_PRICE:1200,SER_DURATION:180,SER_CATEGORY:'ทำความสะอาด',SER_STATUS:'Active'},
+ {SER_CODE:'S002',SER_NAME:'ล้างแอร์',SER_PRICE:600,SER_DURATION:60,SER_CATEGORY:'ซ่อมบำรุง',SER_STATUS:'Active'},
+ {SER_CODE:'S003',SER_NAME:'ซักรีดถึงบ้าน',SER_PRICE:450,SER_DURATION:90,SER_CATEGORY:'ซักรีด',SER_STATUS:'Active'}],
+bookings:[{BOOK_ID:1,CUS_CODE:'C001',SERVICE_ID:'S001',BOOK_DATE:'2026-11-02',BOOK_TIME:'09:00',BOOK_ADDRESS:'ห้อง 12/3 สุขุมวิท 24',BOOK_STATUS:'Confirmed',TOTAL_PRICE:1200},
+ {BOOK_ID:2,CUS_CODE:'C002',SERVICE_ID:'S002',BOOK_DATE:'2026-11-05',BOOK_TIME:'13:30',BOOK_ADDRESS:'99 ถ.ติวานนท์',BOOK_STATUS:'Pending',TOTAL_PRICE:600},
+ {BOOK_ID:3,CUS_CODE:'C003',SERVICE_ID:'S001',BOOK_DATE:'2026-10-27',BOOK_TIME:'10:00',BOOK_ADDRESS:'อาคารสีลมพลาซ่า ชั้น 5',BOOK_STATUS:'Done',TOTAL_PRICE:1200}],
+payments:[{PAY_ID:1,BOOK_ID:3,PAY_METHOD:'PromptPay',PAY_AMOUNT:1200,PAY_DATE:'2026-10-27',PAY_STATUS:'Paid',TRANSACTION_REF:'TX20261027A'},
+ {PAY_ID:2,BOOK_ID:1,PAY_METHOD:'Credit Card',PAY_AMOUNT:600,PAY_DATE:'2026-10-29',PAY_STATUS:'Paid',TRANSACTION_REF:'TX20261029B',NOTE:'มัดจำ 50%'},
+ {PAY_ID:3,BOOK_ID:2,PAY_METHOD:'Cash',PAY_AMOUNT:600,PAY_DATE:'',PAY_STATUS:'Unpaid'}],
+assignments:[{BW_ID:1,BOOK_ID:1,WRK_CODE:'W001',ASSIGN_DATE:'2026-10-29',STATUS:'Assigned'},
+ {BW_ID:2,BOOK_ID:3,WRK_CODE:'W003',ASSIGN_DATE:'2026-10-25',STATUS:'Completed'},
+ {BW_ID:3,BOOK_ID:2,WRK_CODE:'W002',ASSIGN_DATE:'2026-10-29',STATUS:'Accepted'}]
+});
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let DB,tab='home',q='';
+try{const s=localStorage.getItem('bk_db');if(s)DB=JSON.parse(s)}catch(e){}
+DB=DB||seed();
+const save=()=>{try{localStorage.setItem('bk_db',JSON.stringify(DB))}catch(e){}};
+function lbl(tn,k){const t=T[tn],r=DB[tn].find(x=>String(x[t.k])===String(k));return r?t.l(r):(k||'–')}
+const money=v=>Number(v||0).toLocaleString('th-TH')+' ฿';
+function toast(m){const t=$('#toast');t.textContent=m;t.className='show';clearTimeout(toast.h);toast.h=setTimeout(()=>t.className='',2600)}
+function badge(v){if(!v)return'–';const m={Paid:'ok',Active:'ok',Done:'ok',Completed:'ok',Confirmed:'ok',Pending:'warn',Unpaid:'warn',Assigned:'warn',Accepted:'info',VIP:'info',Cancelled:'bad',Inactive:'bad',Refunded:'bad',Declined:'bad'};return`<span class="b ${m[v]||''}">${esc(v)}</span>`}
+function cell(tn,n,v){const f=T[tn].F.find(x=>x.n===n);
+ if(f.ty==='r')return esc(lbl(f.o,v));
+ if(/STATUS$/.test(n)||n==='CUS_TYPE')return badge(v);
+ if(f.ty==='n'&&/PRICE|AMOUNT/.test(n))return v===''?'–':money(v);
+ return v===''||v==null?'–':esc(v)}
+function render(){
+ $('#nav').innerHTML=[['home','🏠','ภาพรวม'],...Object.entries(T).map(([k,t])=>[k,t.i,t.t])].map(([k,i,n])=>`<button data-t="${k}" class="${k===tab?'on':''}">${i} ${n}</button>`).join('');
+ const m=$('#main');
+ if(tab==='home'){
+  const rev=DB.payments.filter(p=>p.PAY_STATUS==='Paid').reduce((a,p)=>a+Number(p.PAY_AMOUNT||0),0);
+  const up=DB.bookings.filter(b=>['Pending','Confirmed'].includes(b.BOOK_STATUS)).sort((a,b)=>a.BOOK_DATE.localeCompare(b.BOOK_DATE)).slice(0,5);
+  m.innerHTML=`<h1>ภาพรวม</h1><p class="sub">สรุปข้อมูลระบบจองบริการ</p>
+  <div class="stats"><div class="stat"><small>รายได้ที่ชำระแล้ว</small><b>${money(rev)}</b></div>
+  <div class="stat"><small>การจองที่รอดำเนินการ</small><b>${DB.bookings.filter(b=>b.BOOK_STATUS==='Pending').length}</b></div>
+  <div class="stat"><small>ลูกค้าทั้งหมด</small><b>${DB.customers.length}</b></div>
+  <div class="stat"><small>พนักงานที่พร้อมทำงาน</small><b>${DB.workers.filter(w=>w.WRK_STATUS==='Active').length}</b></div></div>
+  <h2 style="font-size:17px;margin:0 0 10px">คิวงานที่ใกล้ถึง</h2><div class="card wrap"><table><thead><tr><th>วันที่</th><th>เวลา</th><th>ลูกค้า</th><th>บริการ</th><th>สถานะ</th></tr></thead><tbody>${
+  up.map(b=>`<tr data-o="bookings:${b.BOOK_ID}"><td>${esc(b.BOOK_DATE)}</td><td>${esc(b.BOOK_TIME)}</td><td>${esc(lbl('customers',b.CUS_CODE))}</td><td>${esc(lbl('services',b.SERVICE_ID))}</td><td>${badge(b.BOOK_STATUS)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">ไม่มีคิวงาน</td></tr>'}</tbody></table></div>`;return}
+ const t=T[tab],rows=DB[tab].filter(r=>!q||Object.values(r).join(' ').toLowerCase().includes(q.toLowerCase()));
+ m.innerHTML=`<div class="bar"><h1>${t.i} ${t.t}</h1><input id="q" placeholder="ค้นหา..." value="${esc(q)}"><button class="btn" id="add">+ เพิ่ม</button></div>
+ <div class="card wrap"><table><thead><tr>${t.c.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${
+ rows.map(r=>`<tr data-o="${tab}:${r[t.k]}">${t.c.map(c=>`<td>${cell(tab,c,r[c])}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${t.c.length}" class="empty">ไม่พบข้อมูล</td></tr>`}</tbody></table></div>`;
+ const qi=$('#q');qi.oninput=()=>{q=qi.value;const p=qi.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(p,p)};
+ $('#add').onclick=()=>openForm(tab,null)}
+function nextId(tn){const t=T[tn];const nums=DB[tn].map(r=>parseInt(String(r[t.k]).replace(/\D/g,''))||0);const n=Math.max(0,...nums)+1;return t.p?t.p+String(n).padStart(3,'0'):n}
+function openForm(tn,key){
+ const t=T[tn],rec=key==null?null:DB[tn].find(r=>String(r[t.k])===String(key)),d=$('#dlg');
+ const inp=f=>{const v=rec?rec[f.n]??'':'';
+  if(f.ty==='k')return`<input name="${f.n}" value="${esc(rec?v:nextId(tn))}" readonly>`;
+  if(f.ty==='s')return`<select name="${f.n}">${f.o.split('|').map(o=>`<option${o===v?' selected':''}>${o}</option>`).join('')}</select>`;
+  if(f.ty==='r')return`<select name="${f.n}">${DB[f.o].map(r=>{const k=r[T[f.o].k];return`<option value="${esc(k)}"${String(k)===String(v)?' selected':''}>${esc(T[f.o].l(r))}</option>`}).join('')}</select>`;
+  if(f.ty==='m')return`<textarea name="${f.n}" rows="2">${esc(v)}</textarea>`;
+  const ty={d:'date',h:'time',n:'number',e:'email',p:'tel',t:'text'}[f.ty];
+  return`<input name="${f.n}" type="${ty}" ${f.ty==='n'?'step="0.01" min="0"':''} value="${esc(v)}">`};
+ d.innerHTML=`<form><h2>${rec?'แก้ไข':'เพิ่ม'}${t.t}</h2>${t.F.map(f=>`<div class="${f.ty==='m'||/ADDRESS/.test(f.n)?'full':''}"><label>${f.n}</label>${inp(f)}</div>`).join('')}
+ <div class="acts">${rec?'<button type="button" class="btn del" id="del">ลบ</button>':''}<span class="sp"></span><button type="button" class="btn ghost" id="cx">ยกเลิก</button><button class="btn">บันทึก</button></div></form>`;
+ const fm=d.querySelector('form');
+ if(tn==='bookings'){const s=fm.SERVICE_ID,p=fm.TOTAL_PRICE;s.onchange=()=>{const sv=DB.services.find(x=>x.SER_CODE===s.value);if(sv&&(!p.value||+p.value===0))p.value=sv.SER_PRICE};if(!rec)s.onchange()}
+ fm.onsubmit=e=>{e.preventDefault();const o={};t.F.forEach(f=>{let v=fm[f.n].value;if(f.ty==='n'&&v!=='')v=Number(v);if(f.ty==='k'&&!t.p)v=Number(v);o[f.n]=v});
+  if(rec)Object.assign(rec,o);else DB[tn].push(o);save();d.close();render();toast('บันทึกแล้ว')};
+ d.querySelector('#cx').onclick=()=>d.close();
+ const del=d.querySelector('#del');
+ if(del)del.onclick=()=>{
+  if(!del.dataset.sure){del.dataset.sure=1;del.textContent='ยืนยันลบ?';return}
+  for(const[on,ot]of Object.entries(T))for(const f of ot.F)if(f.ty==='r'&&f.o===tn&&DB[on].some(r=>String(r[f.n])===String(key))){toast('ลบไม่ได้: มีข้อมูลใน “'+ot.t+'” อ้างอิงอยู่');return}
+  DB[tn]=DB[tn].filter(r=>r!==rec);save();d.close();render();toast('ลบแล้ว')};
+ d.showModal()}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('nav button');if(b){tab=b.dataset.t;q='';render();return}
+ const r=e.target.closest('tr[data-o]');if(r){const i=r.dataset.o.indexOf(':');const tn=r.dataset.o.slice(0,i);if(tab==='home'){tab=tn;render()}openForm(tn,r.dataset.o.slice(i+1))}});
+$('#reset').onclick=function(){if(!this.dataset.sure){this.dataset.sure=1;this.textContent='กดอีกครั้งเพื่อยืนยัน';return}
+ DB=seed();save();this.dataset.sure='';this.textContent='รีเซ็ตเป็นข้อมูลตัวอย่าง';tab='home';render();toast('รีเซ็ตแล้ว')};
+render();
+</script>
+</body>
+</html>
